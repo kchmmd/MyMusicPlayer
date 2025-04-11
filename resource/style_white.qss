@@ -1,0 +1,648 @@
+
+QWidget{
+    background-color: rgb(247, 249, 252);
+}
+
+QWidget#MusicList{
+    background-color: rgb(235, 235, 235);
+}
+
+QWidget#SearchBar{
+    background:  rgb(235, 235, 235);
+    border: 1px solid gray;
+    border-radius: 5px;
+}
+QLineEdit#SearchBar_lineEdit{
+    background: rgb(235, 235, 235);
+}
+
+/*已经注释了*/
+QTabBar#tabBar_music_list::tab{/*tab部分*/
+    background: none;
+    color: white;
+    border-radius: 4px;
+    padding: 5px;
+    border: none;
+}
+QTabBar#tabBar_music_list::tab:selected {
+    background: rgb(66,66,66);
+    color: white;
+    border-radius:4px;
+    padding: 5px;
+    border: none;
+}
+QTabWidget::pane{/*内容部分*/
+    background: none;
+    color: white;
+    border: none;
+}
+/*播放列表*/
+QTableWidget#table_music_list{
+    background-color:rgb(240, 240, 240);
+    outline: none;
+    color: black;
+}
+QTableWidget#table_music_list::item{
+    background-color:rgb(235,235,235);
+    color: black;
+}
+QTableWidget#table_music_list::item::hover{
+    border: 1px solid white;
+    border-radius: 5px;
+}
+QTableWidget#table_music_list::item::selected {
+    background-color: white;
+    color: black;
+    border-radius: 5px;
+}
+/*歌词列表*/
+QTableWidget#table_lyric{
+    background-color: rgb(247, 249, 252);
+    outline: none;
+    color: gray;
+}
+QTableWidget#table_lyric::item::hover{
+    border: 1px solid gray;
+    border-radius: 5px;
+}
+QTableWidget#table_lyric::item::selected {
+    background-color: rgb(247, 249, 252);
+    color: black;
+}
+
+
+QScrollBar#table_music_scrollBar::vertical{
+    width: 6px;
+    background-color: rgb(175,175,175);
+    border-radius: 3px;
+}
+QScrollBar#table_music_scrollBar::handle::vertical{
+    width: 6px;
+    background-color: rgb(200,200,200);
+    border-radius: 3px;
+}
+QScrollBar#table_music_scrollBar::handle::vertical::hover{
+    width: 6px;
+    background-color: gray;
+    border-radius: 3px;
+}
+
+QLabel{
+    color: black;
+}
+
+QLineEdit{
+    border: none;
+    color: white;
+}
+
+/*搜索按钮*/
+QPushButton#SearchBar_search{
+    icon-size: 24px;
+    image: url(:/icon/search_gray.png);
+    background: none;
+    border: none;
+}
+QPushButton#SearchBar_search::hover{
+    icon-size: 24px;
+    image: url(:/icon/search_white.png);
+    background: none;
+    border: none;
+}
+/*搜索清空按钮*/
+QPushButton#SearchBar_clear{
+    width: 12px;
+    height: 12px;
+    padding: 5px;
+    icon-size: 12px;
+    image: url(:/icon/close_black.png);
+    background: gray;
+    border-radius: 8px;
+    border: none;
+}
+QPushButton#SearchBar_clear::hover{
+    width: 12px;
+    height: 12px;
+    padding: 5px;
+    icon-size: 12px;
+    image: url(:/icon/close_black.png);
+    background: white;
+    border-radius: 8px;
+    border: none;
+}
+/*收藏按钮去掉了*/
+QPushButton#love{
+    icon-size: 24px;
+    image: url(:/icon/love_black.png);
+    background: none;
+    border: none;
+}
+QPushButton#love::hover{
+    icon-size: 24px;
+    image: url(:/icon/love_gray.png);
+    background: none;
+    border: none;
+}
+
+QPushButton#pre{
+    icon-size: 24px;
+    image: url(:/icon/pre_gray.png);
+    background: none;
+    border: none;
+}
+QPushButton#pre::hover{
+    icon-size: 24px;
+    image: url(:/icon/pre_black.png);
+    background: none;
+    border: none;
+}
+/*播放按钮*/
+QPushButton#player_pause[status="play"]{
+    width: 32px;
+    height: 32px;
+    padding: 10px;
+    icon-size: 24px;
+    image: url(:/icon/pause_white.png);
+    background: rgb(252,61,80);/*红色 浅一点*/
+    border-radius: 16px;
+    border: none;
+}
+QPushButton#player_pause[status="play"]::hover{
+    width: 32px;
+    height: 32px;
+    padding: 10px;
+    icon-size: 24px;
+    image: url(:/icon/pause_white.png);
+    background: rgb(227,55,66);/*红色 深一点*/
+    border-radius: 16px;
+    border: none;
+}
+QPushButton#player_pause[status="pause"]{
+    width: 32px;
+    height: 32px;
+    padding: 10px;
+    icon-size: 24px;
+    image: url(:/icon/play_white.png);
+    background: rgb(252,61,80);
+    border-radius: 16px;
+    border: none;
+}
+QPushButton#player_pause[status="pause"]::hover{
+    width: 32px;
+    height: 32px;
+    padding: 10px;
+    icon-size: 24px;
+    image: url(:/icon/play_white.png);
+    background: rgb(227,55,66);
+    border-radius: 16px;
+    border: none;
+}
+
+QPushButton#next{
+    icon-size: 24px;
+    image: url(:/icon/next_gray.png);
+    background: none;
+    border: none;
+}
+QPushButton#next::hover{
+    icon-size: 24px;
+    image: url(:/icon/next_black.png);
+    background: none;
+    border: none;
+}
+
+QPushButton#player_model[status="single_loop"]{
+    icon-size: 24px;
+    image: url(:/icon/single_loop_gray.png);
+    background: none;
+    border: none;
+}
+QPushButton#player_model[status="single_loop"]::hover{
+    icon-size: 24px;
+    image: url(:/icon/single_loop_black.png);
+    background: none;
+    border: none;
+}
+QPushButton#player_model[status="list_loop"]{
+    icon-size: 24px;
+    image: url(:/icon/list_loop_gray.png);
+    background: none;
+    border: none;
+}
+QPushButton#player_model[status="list_loop"]::hover{
+    icon-size: 24px;
+    image: url(:/icon/list_loop_black.png);
+    background: none;
+    border: none;
+}
+QPushButton#player_model[status="random_play"]{
+    icon-size: 24px;
+    image: url(:/icon/random_play_gray.png);
+    background: none;
+    border: none;
+}
+QPushButton#player_model[status="random_play"]::hover{
+    icon-size: 24px;
+    image: url(:/icon/random_play_black.png);
+    background: none;
+    border: none;
+}
+QPushButton#player_model[status="order_play"]{
+    icon-size: 24px;
+    image: url(:/icon/order_play_gray.png);
+    background: none;
+    border: none;
+}
+QPushButton#player_model[status="order_play"]::hover{
+    icon-size: 24px;
+    image: url(:/icon/order_play_black.png);
+    background: none;
+    border: none;
+}
+
+QPushButton#lyric{
+    icon-size: 24px;
+    image: url(:/icon/lyric_gray.png);
+    background: none;
+    border: none;
+}
+QPushButton#lyric::hover{
+    icon-size: 24px;
+    image: url(:/icon/lyric_black.png);
+    background: none;
+    border: none;
+}
+
+QPushButton#volume[status="volume"]{
+    icon-size: 24px;
+    image: url(:/icon/volume_gray.png);
+    background: none;
+    border: none;
+}
+QPushButton#volume[status="volume"]::hover{
+    icon-size: 24px;
+    image: url(:/icon/volume_black.png);
+    background: none;
+    border: none;
+}
+QPushButton#volume[status="mute"]{
+    icon-size: 24px;
+    image: url(:/icon/mute_gray.png);
+    background: none;
+    border: none;
+}
+QPushButton#volume[status="mute"]::hover{
+    icon-size: 24px;
+    image: url(:/icon/mute_black.png);
+    background: none;
+    border: none;
+}
+
+QPushButton#music_list{
+    icon-size: 24px;
+    image: url(:/icon/music_list_gray.png);
+    background: none;
+    border: none;
+}
+QPushButton#music_list::hover{
+    image: url(:/icon/music_list_black.png);
+    icon-size: 24px;
+    background: none;
+    border: none;
+}
+
+QPushButton#title{
+    width: 24px;
+    height: 24px;
+    padding: 10px;
+    icon-size: 24px;
+    image: url(:/icon/k_white.png);
+    background: rgb(252,61,80);
+    border-radius: 14px;
+    border: none;
+}
+QPushButton#title::hover{
+    width: 24px;
+    height: 24px;
+    padding: 10px;
+    icon-size: 24px;
+    image: url(:/icon/k_white.png);
+    background: rgb(227,55,66);
+    border-radius: 14px;
+    border: none;
+}
+
+QPushButton#close{
+    image: url(:/icon/close_gray.png);
+    icon-size: 15px;
+    background: none;
+    border: none;
+}
+QPushButton#close::hover{
+    image: url(:/icon/close_black.png);
+    icon-size: 15px;
+    background: none;
+    border: none;
+}
+
+QPushButton#maxOrNormal[status="normal"]{
+    image: url(:/icon/max_gray.png);
+    icon-size: 15px;
+    background: none;
+    border: none;
+}
+QPushButton#maxOrNormal[status="normal"]::hover{
+    image: url(:/icon/max_black.png);
+    icon-size: 15px;
+    background: none;
+    border: none;
+}
+
+QPushButton#maxOrNormal[status="max"]{
+    image: url(:/icon/normal_gray.png);
+    icon-size: 15px;
+    background: none;
+    border: none;
+}
+QPushButton#maxOrNormal[status="max"]::hover{
+    image: url(:/icon/normal_black.png);
+    icon-size: 15px;
+    background: none;
+    border: none;
+}
+
+QPushButton#min{
+    image: url(:/icon/min_gray.png);
+    icon-size: 15px;
+    background: none;
+    border: none;
+}
+QPushButton#min::hover{
+    image: url(:/icon/min_black.png);
+    icon-size: 15px;
+    background: none;
+    border: none;
+}
+
+QPushButton#style{
+    image: url(:/icon/style_gray.png);
+    icon-size: 15px;
+    background: none;
+    border: none;
+}
+QPushButton#style::hover{
+    image: url(:/icon/style_black.png);
+    icon-size: 15px;
+    background: none;
+    border: none;
+}
+
+
+QPushButton#set{
+    image: url(:/icon/set_gray.png);
+    icon-size: 15px;
+    background: none;
+    border: none;
+}
+QPushButton#set::hover{
+    image: url(:/icon/set_black.png);
+    icon-size: 15px;
+    background: none;
+    border: none;
+}
+
+QPushButton#lyric_show_main{
+    width: 24px;
+    height: 24px;
+    padding: 5px;
+    icon-size: 16px;
+    image: url(:/icon/k_white.png);
+    background: none;
+    border: none;
+}
+QPushButton#lyric_show_main::hover{
+    width: 24px;
+    height: 24px;
+    padding: 5px;
+    icon-size: 16px;
+    image: url(:/icon/k_gray.png);
+    background: none;
+    border: none;
+}
+
+QPushButton#lyric_back{
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    background: none;
+    border: none;
+}
+QPushButton#lyric_back::hover{
+    color: gray;
+    font-weight: bold;
+    font-size: 16px;
+    background: none;
+    border: none;
+}
+
+QPushButton#lyric_forward{
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    background: none;
+    border: none;
+}
+QPushButton#lyric_forward::hover{
+    color: rgb(219,219,219);
+    font-weight: bold;
+    font-size: 16px;
+    background: none;
+    border: none;
+}
+
+QPushButton#lyric_pre{
+    image: url(:/icon/pre_white.png);
+    icon-size: 16px;
+    background: none;
+    border: none;
+}
+QPushButton#lyric_pre::hover{
+    image: url(:/icon/pre_gray.png);
+    icon-size: 16px;
+    background: none;
+    border: none;
+}
+
+QPushButton#lyric_player_pause[status="play"]{
+    icon-size: 24px;
+    image: url(:/icon/pause_white.png);
+    background: none;
+    border: none;
+}
+QPushButton#lyric_player_pause[status="play"]::hover{
+    icon-size: 24px;
+    image: url(:/icon/pause_gray.png);
+    background: none;
+    border: none;
+}
+QPushButton#lyric_player_pause[status="pause"]{
+    icon-size: 24px;
+    image: url(:/icon/play_white.png);
+    background: none;
+    border: none;
+}
+QPushButton#lyric_player_pause[status="pause"]::hover{
+    icon-size: 24px;
+    image: url(:/icon/play_gray.png);
+    background: none;
+    border: none;
+}
+
+QPushButton#lyric_next{
+    image: url(:/icon/next_white.png);
+    icon-size: 16px;
+    background: none;
+    border: none;
+}
+QPushButton#lyric_next::hover{
+    image: url(:/icon/next_gray.png);
+    icon-size: 16px;
+    background: none;
+    border: none;
+}
+
+QPushButton#lyric_set{
+    image: url(:/icon/set_white.png);
+    icon-size: 22px;
+    background: none;
+    border: none;
+}
+QPushButton#lyric_set::hover{
+    image: url(:/icon/set_gray.png);
+    icon-size: 22px;
+    background: none;
+    border: none;
+}
+
+QPushButton#lyric_fixed[status="unlock"]{
+    image: url(:/icon/unlock_white.png);
+    icon-size: 24px;
+    background: none;
+    border: none;
+}
+QPushButton#lyric_fixed[status="unlock"]::hover{
+    image: url(:/icon/unlock_gray.png);
+    icon-size: 24px;
+    background: none;
+    border: none;
+}
+QPushButton#lyric_fixed[status="lock"]{
+    image: url(:/icon/lock_white.png);
+    icon-size: 16px;
+    background: none;
+    border: none;
+}
+QPushButton#lyric_fixed[status="lock"]::hover{
+    image: url(:/icon/lock_gray.png);
+    icon-size: 16px;
+    background: none;
+    border: none;
+}
+
+QPushButton#lyric_close{
+    image: url(:/icon/close_white.png);
+    icon-size: 16px;
+    background: none;
+    border: none;
+}
+QPushButton#lyric_close::hover{
+    image: url(:/icon/close_gray.png);
+    icon-size: 16px;
+    background: none;
+    border: none;
+}
+/*声音*/
+QSlider#volume_control::groove:vertical{
+   background-color: gray;
+   width: 6px;
+   border-radius: 3px;/*圆角无效*/
+}
+QSlider#volume_control::handle:vertical{
+    width: 10px;
+    height: 10px;
+    margin: 0px -3px 0px -3px;
+    background-color: rgb(200,200,200);
+    border-radius: 3px;
+}
+QSlider#volume_control::handle:vertical::hover{
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    margin: 0px -3px 0px -3px;
+    background-color: rgb(175,175,175);
+}
+/*已滑过的槽部分*/
+QSlider#volume_control::sub-page:vertical{
+    background-color: rgb(219,219,219);
+    width: 6px;
+}
+/*未滑过的槽部分*/
+QSlider#volume_control::add-page:vertical{
+    background-color: rgb(252,61,80);
+    width: 6px;
+}
+/*进度*/
+QSlider#music_time::groove:horizontal{
+   background-color: gray;
+   height: 6px;
+}
+QSlider#music_time::handle:horizontal{
+    width: 20px;
+    height: 20px;
+    margin: -6px  0px -6px 0px;
+    background-color: rgb(200,200,200);
+    border-radius: 6px;
+}
+QSlider#music_time::handle:horizontal::hover{
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    margin: -6px  0px -6px 0px;
+    background-color: rgb(175,175,175);
+}
+/*已滑过的槽部分*/
+QSlider#music_time::sub-page:horizontal{
+    background-color: rgb(252,61,80);
+    height: 6px;
+}
+/*未滑过的槽部分*/
+QSlider#music_time::add-page:horizontal{
+    background-color: rgb(219,219,219);
+    height: 6px;
+}
+
+QMenu{
+    width: 150px;
+    background: rgb(66,66,66);
+    color: white;
+    font-size: 14px;
+    border-radius: 8px;
+    padding-top:8px;
+    padding-bottom:8px;
+}
+QMenu::item{
+    width: 150px;
+    height: 30px;
+    background: transparent;
+    color: white;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+QMenu::item:selected{
+    width: 150px;
+    height: 30px;
+    background:rgb(100,100,100);
+    color: white;
+    padding-left: 20px;
+    padding-right: 20px;
+}
