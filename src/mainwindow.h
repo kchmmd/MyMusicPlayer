@@ -65,7 +65,7 @@ private:
 
     void player();
     void autoPlayerNext();
-    void updateVecPlayList();
+    int getRandomIndex();
 
     QString getCurrentName();
     QString getCurrentMusicFile();

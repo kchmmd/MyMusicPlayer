@@ -214,11 +214,11 @@ void MainWindow::init()
     this->setGeometry(m_config.widget_x, m_config.widget_y, m_config.widget_width, m_config.widget_height);
     m_controlBar->setCurrentPlayerType(m_config.playType);
     m_playType = m_config.playType;
+	m_myVolumeControlBar->setVolume(m_config.volume);
     // 加载QSS文件
     QString style_qss = getCurrentStyle();
     setStyle(style_qss);//加载样式
     loadReCord();//加载记录
-    updateVecPlayList();
 }
 
 void MainWindow::showReset()
@@ -231,8 +231,7 @@ void MainWindow::initConfig()
     m_config.volume = 50;
     m_config.software_name = QString::fromLocal8Bit("k歌之王");
 	m_config.software_about = "软件：k歌之王\n作者：kch";
-    m_config.icon = "logo.png";
-    m_config.map_name_file[QString::fromLocal8Bit("所有歌曲")] = "all_music.txt";
+    m_config.icon = "logo.ico";
     m_config.widget_width = DEFAULT_WIDGET_WIDTH;
     m_config.widget_height = DEFAULT_WIDGET_HEIGHT;
     m_config.widget_x = DEFAULT_WIDGET_X;
@@ -258,7 +257,6 @@ void MainWindow::setConfig()
 {
     m_config.volume = m_myVolumeControlBar->value();
     m_config.software_name = this->windowTitle();
-    m_config.map_name_file[QString::fromLocal8Bit("所有歌曲")] = "all_music.txt";
     m_config.lyric_width = m_lyricBar->width();
     m_config.lyric_height = m_lyricBar->height();
     m_config.lyric_x = m_lyricBar->x();
@@ -403,10 +401,9 @@ void MainWindow::autoPlayerNext()
 {
     //qDebug()<<"m_playType:"<<m_playType;
     switch (m_playType) {
-        case ShufflePlay://随机播放 不重复
+        case ShufflePlay://随机播放
             {
-                int randomInt = QRandomGenerator::global()->bounded(int(m_vec_playList.size()));
-                m_vec_playList.erase(m_vec_playList.begin() + randomInt);
+                int randomInt = getRandomIndex();
                 m_player->playlist()->setCurrentIndex(randomInt);
                 player();
             }
@@ -426,11 +423,9 @@ void MainWindow::autoPlayerNext()
     }
 }
 
-void MainWindow::updateVecPlayList()
+int MainWindow::getRandomIndex()
 {
-    for(int i=0; i<m_musicList->rowCount();i++){
-        m_vec_playList.push_back(i);
-    }
+	return QRandomGenerator::global()->bounded(int(m_musicList->rowCount()));
 }
 
 QString MainWindow::getCurrentName()
@@ -508,14 +503,7 @@ void MainWindow::loadReCord()
     QStringList files;
     QString qstr_current = file.readLine();
     qstr_current.replace("\n","");
-    QStringList qstrList = qstr_current.split(" ");
-    if(qstrList.length() != 2){
-        QMessageBox::information(nullptr, "提示", music_files_path+"歌曲记录格式错误！");
-        file.close();
-        return;
-    }
-	m_current_index = qstrList[0].toInt();
-    int volume =qstrList[1].toInt();
+	m_current_index = qstr_current.toInt();
     while(!file.atEnd()){
         QString line_qstr = file.readLine().replace("\n","");
         qDebug()<<"line_qstr:"<<line_qstr;
@@ -525,7 +513,6 @@ void MainWindow::loadReCord()
 
     //player_list->setCurrentIndex(current_index);
     //m_player->setPosition(current_index);
-    m_myVolumeControlBar->setVolume(volume);
 
     //线程加载，加载一个刷一个
 	emit sigAddMusicFiles(files);
@@ -588,15 +575,7 @@ void MainWindow::loadConfig()
             m_config.lyric_height = domElement.attribute("height").toUInt();
             m_config.lyric_x = domElement.attribute("x").toUInt();
             m_config.lyric_y = domElement.attribute("y").toUInt();
-        }else if(type == "music_dirs"){
-            QDomNode node_child = domElement.firstChild();
-            while(!node_child.isNull()){
-                QString name = node_child.toElement().attribute("value");
-                QString file = node_child.toElement().attribute("file");
-                m_config.map_name_file[name] = file;
-                node_child = node_child.nextSibling();
-            }
-		}else if (type == "lyric_analysis") {
+        }else if (type == "lyric_analysis") {
 			m_config.lyric_analysis_cmd = domElement.attribute("value");
 			m_config.lyric_analysis_exe = domElement.attribute("exe");
 			m_config.lyric_analysis_model = domElement.attribute("model");
@@ -667,18 +646,6 @@ void MainWindow::saveConfig()
 	domElementChild.setAttribute("exe", m_config.lyric_analysis_exe);
 	domElementChild.setAttribute("model", m_config.lyric_analysis_model);
 	domElement.appendChild(domElementChild);
-
-    domElementChild = doc.createElement("Node");
-    domElementChild.setAttribute("type","music_dirs");
-    for(auto itor = m_config.map_name_file.begin();
-        itor != m_config.map_name_file.end(); itor++){
-         QDomElement domElementChildChild = doc.createElement("Node");
-         domElementChildChild.setAttribute("type","music_dir");
-         domElementChildChild.setAttribute("value",itor->first);
-         domElementChildChild.setAttribute("file",itor->second);
-         domElementChild.appendChild(domElementChildChild );
-    }
-    domElement.appendChild(domElementChild);
 
     QTextStream stream(&file);
     doc.save(stream, 4);//保存到文件
@@ -876,18 +843,17 @@ void MainWindow::onClickedLyric()
 void MainWindow::onSetCurrentPlayType(PlayType playType)
 {
    m_playType = playType;
-   switch (m_playType) {
-       case ShufflePlay://随机播放
-           updateVecPlayList();
-           break;
-       case OrderPlay:
-           break;
-       case SingleLoop:
-           break;
-       case ListLoop:
-       default:
-           break;
-   }
+   //switch (m_playType) {
+   //    case ShufflePlay://随机播放
+   //        break;
+   //    case OrderPlay:
+   //        break;
+   //    case SingleLoop:
+   //        break;
+   //    case ListLoop:
+   //    default:
+   //        break;
+   //}
 }
 
 void MainWindow::onEnterMute()
@@ -953,7 +919,8 @@ void MainWindow::onPositionChanged(qint64 duration)
     m_controlBar->setValue(duration);
 
     //qDebug()<<duration<<"/"<<m_duration;
-    if(duration == m_duration){
+    if(0 != duration && duration == m_duration){
+		qDebug()<<"m_duration:"<< m_duration;
 		m_lyricTableWidget->setCurrentDuration(0);//方式单曲循环，故放完重置
         autoPlayerNext();
     }

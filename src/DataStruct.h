@@ -39,7 +39,7 @@
 #define DEFAULT_LYRIC_BAR_HEIGHT 120
 
 #define MUSIC_ICON "logo.png"
-#define PLAYERANIMATION_IMAGE "/resource/logo.png"
+#define PLAYERANIMATION_IMAGE "/resource/logo.ico"
 
 #define RECORD_FILE "/resource/current_playlist.txt"
 #define LYRIC_SUFFIX ".txt"
@@ -76,7 +76,6 @@ struct LineLyricData
 
 struct Config
 {
-    std::map<QString, QString> map_name_file;
     std::set<QString> set_styles;
     QString software_name;
 	QString software_about;

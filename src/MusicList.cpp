@@ -56,7 +56,7 @@ void MusicListManager::analysisMusicFile(const QString &music_file)
 	MusicData musicData;
 	bool re = getMusicData(&musicData, music_file);
 	if (!re) {
-		addLog(music_file + "getMusicData error.");
+		addLog(music_file + " getMusicData error.");
 		return;
 	}
 	qDebug() << "File_path:" << musicData.File_path
@@ -269,6 +269,10 @@ int MusicLyricManager::getFileLyricData(const QString &lyric_file, std::vector<L
 }
 void MusicLyricManager::analysisMusicLyricData(const QString & music_file)
 {
+	if (!QFile(m_lyric_analysis_exe).exists()) {
+		addLog(m_lyric_analysis_exe + "不存在,无法解析歌词.");
+		return;
+	}
 	QString root_path = QCoreApplication::applicationDirPath();
 	QString cmd = m_lyric_analysis_cmd;
 	cmd = cmd.replace("analysis_exe", m_lyric_analysis_exe);
@@ -455,7 +459,7 @@ void MusicList::saveReCord(QString music_files_path, int current_index, int volu
     }
     //int current_index = m_player->playlist()->currentIndex();
     //int volume = m_player->volume();
-	file.write(QString("%1 %2\n").arg(current_index).arg(volume).toLocal8Bit());
+	file.write(QString("%1\n").arg(current_index).toLocal8Bit());
     for(int i=0; i<m_table_music->rowCount(); i++){
         QString path = m_table_music->item(i, 0)->data(Qt::UserRole).toString();
         QString qstr = QString("%1\n").arg(path);
