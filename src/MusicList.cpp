@@ -273,6 +273,10 @@ void MusicLyricManager::analysisMusicLyricData(const QString & music_file)
 		addLog(m_lyric_analysis_exe + "不存在,无法解析歌词.");
 		return;
 	}
+	if (!QFile(m_lyric_analysis_model).exists()) {
+		addLog(m_lyric_analysis_model + "不存在,无法解析歌词.");
+		return;
+	}
 	QString root_path = QCoreApplication::applicationDirPath();
 	QString cmd = m_lyric_analysis_cmd;
 	cmd = cmd.replace("analysis_exe", m_lyric_analysis_exe);

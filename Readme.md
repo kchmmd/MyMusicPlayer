@@ -22,6 +22,16 @@
 
 ![cli](cli.png)
 
+需要下载ggml-large-v1.bin 
+
+![model](model.png)
+
+* ggml-large-v1.bin：
+
+[模型获取方法](https://github.com/ggml-org/whisper.cpp/blob/master/models/README.md)
+
+[直接下载.bin模型](https://huggingface.co/ggerganov/whisper.cpp/tree/main) 不同模型音频转文字的准确度不一样
+
 * src: 主要源码
 
 * resource: 样式文件，及其默认图标，logo
