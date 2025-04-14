@@ -4,6 +4,10 @@
 ![mainwindow_1](mainwindow_1.png)
 ![lyric](lyric.png)
 
+# 视频介绍
+
+https://www.bilibili.com/video/BV1ZnoEYhEwo/?share_source=copy_web&vd_source=02448c7175a258870a08c498786bb242
+
 # 功能介绍
 
 * 添加音乐，支持单个或多个音乐添加、扫描文件方式添加，列表支持音乐名搜索
