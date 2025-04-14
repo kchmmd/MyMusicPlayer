@@ -57,7 +57,7 @@ private:
 	void updateLineLyric(QString &lyric);
 	void addLog(const QString &log);
 private:
-	QString m_music_lyric;
+	//QString m_music_lyric;
 	std::map<QProcess*, QString> m_map_process_file;
 	QString m_lyric_analysis_cmd;
 	QString m_lyric_analysis_exe;

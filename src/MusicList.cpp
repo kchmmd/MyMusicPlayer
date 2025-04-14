@@ -107,7 +107,7 @@ bool MusicListManager::getMusicData(MusicData * musicData, const QString & music
 		musicData->ThumbnailImage = mediaPlayer.metaData("ThumbnailImage").value<QImage>();//专辑图
 	}
 	else {
-		musicData->ThumbnailImage = QImage(QCoreApplication::applicationDirPath() + "/resource/" + MUSIC_ICON);//默认填充
+		musicData->ThumbnailImage = QImage(QCoreApplication::applicationDirPath() + MUSIC_ICON);//默认填充
 	}
 
 	return true;
@@ -147,7 +147,7 @@ void MusicLyricManager::init(const QString & lyric_analysis_cmd, const QString &
 void MusicLyricManager::analysisMusicLyric(const QString &music_file)
 { 
 	QFileInfo info(music_file);
-	m_music_lyric = info.absolutePath() + "/" + info.baseName() + LYRIC_SUFFIX;
+	QString music_lyric = info.absolutePath() + "/" + info.baseName() + LYRIC_SUFFIX;//歌词问题
 
 	std::vector<LineLyricData> vec_lyric;
 	int i_re = getMusicLyricData(music_file, vec_lyric);
@@ -155,7 +155,7 @@ void MusicLyricManager::analysisMusicLyric(const QString &music_file)
 		emit sigMusicLyric(music_file, vec_lyric);
 		return;
 	}
-	i_re = getFileLyricData(m_music_lyric, vec_lyric);
+	i_re = getFileLyricData(music_lyric, vec_lyric);
 	if (vec_lyric.size() != 0) {
 		emit sigMusicLyric(music_file, vec_lyric);
 		return;
@@ -277,12 +277,21 @@ void MusicLyricManager::analysisMusicLyricData(const QString & music_file)
 		addLog(m_lyric_analysis_model + "不存在,无法解析歌词.");
 		return;
 	}
+	//针对文件名包含空格问题，先统一更改文件名，音频转文字后在重命名
+	QFileInfo info(music_file);
+	QString music_tmp_file = info.absolutePath() + MUSIC_NAME + "." + info.suffix();
+	QString music_lyric_tmp_file = music_tmp_file + ".txt";  
+	QFile(music_tmp_file).remove();
+	if (!QFile(music_file).copy(music_tmp_file)){
+		addLog(music_tmp_file + "复制失败.");
+		return;
+	}
 	QString root_path = QCoreApplication::applicationDirPath();
 	QString cmd = m_lyric_analysis_cmd;
 	cmd = cmd.replace("analysis_exe", m_lyric_analysis_exe);
 	cmd = cmd.replace("analysis_model", m_lyric_analysis_model);
-	cmd = cmd.replace("analysis_music_file", music_file);
-	cmd = cmd.replace("analysis_lyric_file", m_music_lyric);
+	cmd = cmd.replace("analysis_music_file", music_tmp_file);
+	cmd = cmd.replace("analysis_lyric_file", music_lyric_tmp_file);
 
 	QProcess* process = new QProcess;
 	connect(process, &QProcess::readAllStandardOutput, this, &MusicLyricManager::onReadAllStandardOutput);
@@ -300,12 +309,24 @@ void MusicLyricManager::onFinished(int exit_code, QProcess::ExitStatus)
 	addLog("onFinished exit_code:" + QString::number(exit_code));
 	QProcess* process = static_cast<QProcess*>(sender());
 	QString music_file = m_map_process_file[process];
-	if (!QFile(m_music_lyric).exists()) {
-		addLog(m_music_lyric + "不存在.");
+	QFileInfo info(music_file);
+	QString music_lyric_tmp_file = QFileInfo(music_file).absolutePath() + MUSIC_NAME + ".txt";
+	QString music_lyric = info.absolutePath() + "/" + info.baseName() + LYRIC_SUFFIX;
+	if (!QFile(music_lyric_tmp_file).exists()) {
+		addLog(music_lyric_tmp_file + "不存在.");
+		return;
+	}
+	if (!QFile(music_lyric_tmp_file).rename(music_lyric)) {
+		addLog(music_lyric_tmp_file + "重命名失败.");
+		return;
+	}
+
+	if (!QFile(music_lyric).exists()) {
+		addLog(music_lyric + "不存在.");
 		return;
 	}
 	std::vector<LineLyricData> vec_lyric;
-	int i_re = getFileLyricData(m_music_lyric, vec_lyric);
+	int i_re = getFileLyricData(music_lyric, vec_lyric);
 	if (vec_lyric.size() != 0) {
 		emit sigMusicLyric(music_file, vec_lyric);
 		return;

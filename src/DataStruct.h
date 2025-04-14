@@ -38,7 +38,7 @@
 #define DEFAULT_LYRIC_BAR_WIDTH 1000
 #define DEFAULT_LYRIC_BAR_HEIGHT 120
 
-#define MUSIC_ICON "logo.png"
+#define MUSIC_ICON "/resource/logo.ico"
 #define PLAYERANIMATION_IMAGE "/resource/logo.ico"
 
 #define RECORD_FILE "/resource/current_playlist.txt"
@@ -48,6 +48,7 @@
 #define LYRIC_ANALYSIS_EXE "/cli/main.exe"
 #define LYRIC_ANALYSIS_MODEL "/cli/ggml-large-v1.bin"
 
+#define MUSIC_NAME "/music_tmp_name"
 
 enum PlayType{
     ShufflePlay=0,//随机播放
