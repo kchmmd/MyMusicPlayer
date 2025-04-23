@@ -18,6 +18,7 @@ public:
     void setTitleToolTip(QString qstr);
 
     void setSetTooltip(QString qstr);
+	void setLanguageTooltip(QString qstr);
     void setStyleTooltip(QString qstr);
     void setMinTooltip(QString qstr);
     void setMaxOrNormalTooltip(QString qstr);
@@ -27,6 +28,7 @@ protected:
 signals:
     void sigClickedTitle();
     void sigClickedSet();
+	void sigClickedLanguage();
     void sigClickedStyle();
     void sigClickedMin();
     void sigClickedMaxOrNormal();
@@ -37,6 +39,7 @@ private:
     QLabel* m_lable_title;
     QPushButton* m_btn_title;
     QPushButton* m_btn_set;
+	QPushButton* m_btn_language;
     QPushButton* m_btn_style;
     QPushButton* m_btn_min;
     QPushButton* m_btn_maxOrNormal;

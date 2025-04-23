@@ -12,6 +12,7 @@ HeaderBar::HeaderBar(QWidget *parent)
     m_lable_title = new QLabel(this);
     m_btn_title = new QPushButton(this);
     m_btn_set= new QPushButton(this);
+	m_btn_language = new QPushButton(this);
     m_btn_style= new QPushButton(this);
     m_btn_min= new QPushButton(this);
     m_btn_maxOrNormal= new QPushButton(this);
@@ -21,6 +22,7 @@ HeaderBar::HeaderBar(QWidget *parent)
     hbox_main->addStretch();
     hbox_main->addWidget(m_btn_set);
     hbox_main->addWidget(m_btn_style);
+	hbox_main->addWidget(m_btn_language);
     hbox_main->addWidget(m_btn_min);
     hbox_main->addWidget(m_btn_maxOrNormal);
     hbox_main->addWidget(m_btn_close);
@@ -29,25 +31,28 @@ HeaderBar::HeaderBar(QWidget *parent)
     m_btn_close->setObjectName("close");
     m_btn_maxOrNormal->setObjectName("maxOrNormal");
     m_btn_min->setObjectName("min");
+	m_btn_set->setObjectName("set");
+	m_btn_language->setObjectName("language");
     m_btn_style->setObjectName("style");
-    m_btn_set->setObjectName("set");
     m_btn_maxOrNormal->setProperty("status","normal");
     m_lable_title->setObjectName("title");
     m_btn_title->setObjectName("title");
 
     m_btn_title->setIcon(QIcon(":/resource/resource/none.png"));
     m_btn_set->setIcon(QIcon(":/resource/resource/none.png"));
+	m_btn_language->setIcon(QIcon(":/resource/resource/none.png"));
     m_btn_style->setIcon(QIcon(":/resource/resource/none.png"));
     m_btn_min->setIcon(QIcon(":/resource/resource/none.png"));
     m_btn_maxOrNormal->setIcon(QIcon(":/resource/resource/none.png"));
     m_btn_close->setIcon(QIcon(":/resource/resource/none.png"));
 
-	m_list_object << m_btn_set << m_btn_style << m_btn_min << m_btn_maxOrNormal << m_btn_close;
+	m_list_object << m_btn_set << m_btn_language << m_btn_style << m_btn_min << m_btn_maxOrNormal << m_btn_close;
 	for (QObject* obj : m_list_object) {
 		obj->installEventFilter(this);
 	}
 
     connect(m_btn_title, &QPushButton::clicked, this, &HeaderBar::sigClickedTitle);
+	connect(m_btn_language, &QPushButton::clicked, this, &HeaderBar::sigClickedLanguage);
     connect(m_btn_set, &QPushButton::clicked, this, &HeaderBar::sigClickedSet);
     connect(m_btn_style, &QPushButton::clicked, this, &HeaderBar::sigClickedStyle);
     connect(m_btn_min, &QPushButton::clicked, this, &HeaderBar::sigClickedMin);
@@ -55,11 +60,12 @@ HeaderBar::HeaderBar(QWidget *parent)
     connect(m_btn_close, &QPushButton::clicked, this, &HeaderBar::sigClickedClose);
     connect(m_btn_maxOrNormal, &QPushButton::clicked, this, &HeaderBar::onClickedMaxOrNormal);
 
-    setSetTooltip("设置");
-    setStyleTooltip("皮肤");
-    setMinTooltip("最小化");
-    setMaxOrNormalTooltip("最大化");
-    setCloseTooltip("关闭");
+    setSetTooltip(tr("Set"));
+	setLanguageTooltip(tr("Language"));
+    setStyleTooltip(tr("Style"));
+    setMinTooltip(tr("Min"));
+    setMaxOrNormalTooltip(tr("Max"));
+    setCloseTooltip(tr("Close"));
 
     m_btn_set->hide();
 }
@@ -89,6 +95,10 @@ void HeaderBar::setSetTooltip(QString qstr)
 {
     m_btn_set->setToolTip(qstr);
 }
+void HeaderBar::setLanguageTooltip(QString qstr)
+{
+	m_btn_language->setToolTip(qstr);
+}
 void HeaderBar::setStyleTooltip(QString qstr)
 {
     m_btn_style->setToolTip(qstr);
@@ -111,8 +121,10 @@ void HeaderBar::onClickedMaxOrNormal()
     m_btn_maxOrNormal->style()->unpolish(m_btn_maxOrNormal);
     if(m_btn_maxOrNormal->property("status").toString() == "normal"){
         m_btn_maxOrNormal->setProperty("status","max");
+		m_btn_maxOrNormal->setToolTip(tr("Restore"));
     }else{
         m_btn_maxOrNormal->setProperty("status","normal");
+		m_btn_maxOrNormal->setToolTip(tr("Max"));
     }
     m_btn_maxOrNormal->style()->polish(m_btn_maxOrNormal);
 }

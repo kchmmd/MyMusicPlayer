@@ -38,6 +38,7 @@
 #include <QFile>
 #include <QMediaPlaylist>
 #include <QThread>
+#include <QDomDocument>
 #include <QDebug>
 
 //主界面
@@ -46,17 +47,18 @@ class MainWindow : public MyWidget
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(Config config, QWidget *parent = nullptr);
     ~MainWindow();
 
     void init();
+	void addLog(const QString &log);
+	static void initConfig(Config& config);//首次默认配置
+	static void loadConfig(Config& config);//配置
 private:
     void showReset();
-    void initConfig();
     void setConfig();
 
     void initLog();
-    void addLog(const QString &log);
     void quitLog();
 
     quint64 getMusicDuration(const QString & music_file);
@@ -76,15 +78,16 @@ private:
 
     void loadReCord();//加载记录
     void saveReCord();//保存记录
-    void loadConfig();//配置
-    void saveConfig();
+	static void saveConfig(const Config& config);
 
     int getIndex(qint64 duration);
 
     void updateTableSize();
-    void setStyle(QString style);
+    void setLanguage(QString language);
+	void setStyle(QString style);
     QString getCurrentStyle();
-    QString getRootPath();
+	QString getCurrentLanguage();
+    static QString getRootPath();
 protected:
     void contextMenuEvent(QContextMenuEvent *event);
     void resizeEvent(QResizeEvent* event);
@@ -101,6 +104,7 @@ private slots:
     void onSetStyle();
 
     void onClickedMaxOrNormal();
+	void onClickedLanguage();
 
     void onClickedGoMain();
     void onClickedSet();
@@ -112,6 +116,7 @@ private slots:
     void onClickedLyric();
     void onSetCurrentPlayType(PlayType);
     void onEnterMute();
+	void onLeaveMute();
 
     void onMenu(QAction* act);
     void onActivated(QSystemTrayIcon::ActivationReason);
@@ -134,6 +139,7 @@ private slots:
     void onItemDoubleClicked(QTableWidgetItem* item);
     void onLyricDoubleClicked(QTableWidgetItem* item);
 private:
+	QTranslator *m_translator;
 	QThread* m_musicListManager_thread;
 	MusicListManager* m_musicListManager;
 	QThread* m_musicLyricManager_thread;

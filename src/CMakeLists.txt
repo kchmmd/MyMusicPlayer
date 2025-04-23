@@ -47,7 +47,6 @@ set(Source
         mainwindow.h
         ControlBar.h
         ControlBar.cpp
-		DataStruct.h
 		LyricBar.cpp
 		LyricBar.h
 		LyricTableWidget.cpp
@@ -63,14 +62,38 @@ set(Source
 )
 source_group("Source" FILES ${Source})
 
+set(DataStruct
+	DataStruct.h
+)
+source_group("DataStruct" FILES ${DataStruct})
+
+set(Language 
+	zh_CN.ts
+	zh_EN.ts
+) 
+source_group("Language" FILES ${Language})
+
+set(Style 
+	"../resource/style_black.qss"
+	"../resource/style_white.qss"
+) 
+source_group("Style" FILES ${Style})
+
 set(ALL_FILES
+	${DataStruct}
 	${HeaderBar}
 	${MyWidget}
 	${Common}
 	${Source}
+	${Language}
+	${Style}
 )
+
 set(RESOURCES_FILE "resource.qrc")  # 你的资源文件名称
 qt5_add_resources(SOURCES ${RESOURCES_FILE}) 
+
+add_compile_options(/Zi)
+add_link_options(/DEBUG)
 
 add_executable(${PROJECT_NAME}  WIN32 ${ALL_FILES} ${SOURCES})
 
@@ -97,3 +120,11 @@ endif()
 #copy FILES
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/../resource/ ${CMAKE_SOURCE_DIR}/../${CMAKE_BUILD_TYPE}/resource/)
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/../cli/ ${CMAKE_SOURCE_DIR}/../${CMAKE_BUILD_TYPE}/cli/)
+
+set(LRELEASE_EXECUTABLE ${Qt5_DIR}/../../../bin/lrelease)
+message("LRELEASE_EXECUTABLE:"${LRELEASE_EXECUTABLE})
+#脚本执行期间才会执行，故可以先编辑写当前CMakeList.txt 构建时会执行该脚本
+execute_process(
+        COMMAND ${LRELEASE_EXECUTABLE}  ${CMAKE_SOURCE_DIR}/zh_CN.ts -qm ${CMAKE_SOURCE_DIR}/../${CMAKE_BUILD_TYPE}/resource/zh_CN.qm)
+execute_process(
+        COMMAND ${LRELEASE_EXECUTABLE}  ${CMAKE_SOURCE_DIR}/zh_EN.ts -qm ${CMAKE_SOURCE_DIR}/../${CMAKE_BUILD_TYPE}/resource/zh_EN.qm)

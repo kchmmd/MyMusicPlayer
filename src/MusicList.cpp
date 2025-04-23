@@ -126,6 +126,20 @@ MusicLyricManager::MusicLyricManager()
 
 MusicLyricManager::~MusicLyricManager()
 {
+	for (auto itor = m_map_process_id.begin();
+		itor != m_map_process_id.end(); itor++) {
+		if (itor->second != -1) {
+#ifdef _WIN32
+		QString stop_cmd = QString("TASKKILL /PID %1 /F").arg(itor->second);
+#else 
+		QString stop_cmd = QString("kill -9 %1).arg(itor->second);
+#endif
+		QProcess process;
+		process.start(stop_cmd.toLocal8Bit());
+		process.waitForFinished(-1);
+		addLog(process.readAllStandardOutput());
+		}
+	}
 	for (auto itor = m_map_process_file.begin();
 		itor != m_map_process_file.end(); itor++) {
 		itor->first->deleteLater();
@@ -227,11 +241,11 @@ int MusicLyricManager::getFileLyricData(const QString &lyric_file, std::vector<L
 {
 	QFile file(lyric_file);
 	if (!file.exists()) {
-		addLog(lyric_file + "不存在." );
+		addLog(lyric_file + tr("not exist."));
 		return -1;
 	}
 	if (!file.open(QIODevice::ReadOnly)) {
-		addLog(lyric_file + "歌词打开失败.");
+		addLog(lyric_file + tr("lyric open error."));
 		return -1;
 	}
 	int index = 0;
@@ -244,7 +258,7 @@ int MusicLyricManager::getFileLyricData(const QString &lyric_file, std::vector<L
 		QStringList qstrList = qstr_line.split("]");
 		if (qstrList.length() != 2) {
 			file.close();
-			addLog(lyric_file + "歌词格式解析错误.");
+			addLog(lyric_file + tr("lyric analysis error."));
 			return -1;
 		}
 
@@ -254,7 +268,7 @@ int MusicLyricManager::getFileLyricData(const QString &lyric_file, std::vector<L
 		QStringList qstrList_time = qstr_time.split("-->");
 		if (qstrList.length() != 2) {
 			file.close();
-			addLog(lyric_file + "歌词格式解析错误.");
+			addLog(lyric_file + tr("lyric analysis error."));
 			return -1;
 		}
 		qint64 start_time = getQstrTime(qstrList_time[0].split(".").at(0));
@@ -270,11 +284,11 @@ int MusicLyricManager::getFileLyricData(const QString &lyric_file, std::vector<L
 void MusicLyricManager::analysisMusicLyricData(const QString & music_file)
 {
 	if (!QFile(m_lyric_analysis_exe).exists()) {
-		addLog(m_lyric_analysis_exe + "不存在,无法解析歌词.");
+		addLog(m_lyric_analysis_exe + tr("not exist, can not analysis lyric."));
 		return;
 	}
 	if (!QFile(m_lyric_analysis_model).exists()) {
-		addLog(m_lyric_analysis_model + "不存在,无法解析歌词.");
+		addLog(m_lyric_analysis_model + tr("not exist, can not analysis lyric."));
 		return;
 	}
 	//针对文件名包含空格问题，先统一更改文件名，音频转文字后在重命名
@@ -283,7 +297,7 @@ void MusicLyricManager::analysisMusicLyricData(const QString & music_file)
 	QString music_lyric_tmp_file = music_tmp_file + ".txt";  
 	QFile(music_tmp_file).remove();
 	if (!QFile(music_file).copy(music_tmp_file)){
-		addLog(music_tmp_file + "复制失败.");
+		addLog(music_tmp_file + tr("copy error."));
 		return;
 	}
 	QString root_path = QCoreApplication::applicationDirPath();
@@ -300,6 +314,7 @@ void MusicLyricManager::analysisMusicLyricData(const QString & music_file)
 
 	process->start(cmd);
 	m_map_process_file[process] = music_file;
+	m_map_process_id[process] = process->processId();
 	addLog(cmd);
 
 	return;
@@ -308,21 +323,22 @@ void MusicLyricManager::onFinished(int exit_code, QProcess::ExitStatus)
 {
 	addLog("onFinished exit_code:" + QString::number(exit_code));
 	QProcess* process = static_cast<QProcess*>(sender());
+	m_map_process_id[process] = -1;
 	QString music_file = m_map_process_file[process];
 	QFileInfo info(music_file);
 	QString music_lyric_tmp_file = QFileInfo(music_file).absolutePath() + MUSIC_NAME + ".txt";
 	QString music_lyric = info.absolutePath() + "/" + info.baseName() + LYRIC_SUFFIX;
 	if (!QFile(music_lyric_tmp_file).exists()) {
-		addLog(music_lyric_tmp_file + "不存在.");
+		addLog(music_lyric_tmp_file + tr("not exist."));
 		return;
 	}
 	if (!QFile(music_lyric_tmp_file).rename(music_lyric)) {
-		addLog(music_lyric_tmp_file + "重命名失败.");
+		addLog(music_lyric_tmp_file + tr("rename error."));
 		return;
 	}
 
 	if (!QFile(music_lyric).exists()) {
-		addLog(music_lyric + "不存在.");
+		addLog(music_lyric + tr("not exist."));
 		return;
 	}
 	std::vector<LineLyricData> vec_lyric;
@@ -375,7 +391,7 @@ MusicList::MusicList(QWidget *parent)
     m_table_music->setObjectName("table_music_list");
 
     QStringList qstr_list;
-    qstr_list << QString::fromLocal8Bit("歌名");//<< "歌手" <<"时长";
+    qstr_list << tr("Music name");//<< "歌手" <<"时长";
     m_table_music->setColumnCount(qstr_list.length());
     m_table_music->setHorizontalHeaderLabels(qstr_list);
     m_table_music->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -421,10 +437,13 @@ void MusicList::addItem(const MusicData& musicData)
 {
     m_table_music->setRowCount(m_table_music->rowCount() + 1);
     QTableWidgetItem* item_name = new QTableWidgetItem(musicData.Title);
-    QString tip = QString::fromLocal8Bit("歌名: %1\n歌手: %2\n时长: %3")
-            .arg(musicData.Title)
-            .arg(musicData.Author)
-            .arg(musicData.Duration_format);
+    QString tip = QString("%1: %2\n%3: %4\n%5: %6")
+				.arg(tr("Music name"))
+				.arg(musicData.Title)
+				.arg(tr("Singer"))
+				.arg(musicData.Author)
+				.arg(tr("Duration"))
+				.arg(musicData.Duration_format);
     item_name->setToolTip(tip);
     item_name->setIcon(QPixmap::fromImage(musicData.ThumbnailImage));
     m_table_music->setItem(m_table_music->rowCount() - 1, 0, item_name);
@@ -474,7 +493,7 @@ void MusicList::saveReCord(QString music_files_path, int current_index, int volu
     //QString music_files_path = QCoreApplication::applicationDirPath() + RECORD_FILE;
     QFile file(music_files_path);
     if(!file.open(QIODevice::WriteOnly)){
-        QMessageBox::information(nullptr, "提示", music_files_path+"歌曲记录保存失败！");
+        QMessageBox::information(nullptr, tr("Message"), music_files_path + tr("open error, can not save music list."));
         return;
     }
     if(m_table_music->rowCount() == 0){

@@ -44,7 +44,7 @@ public:
     void setPosition(QPoint point, int btn_volume_width){
         //qDebug()<<width()<<" : "<<height();
         int border = 10;
-        move(point.x() + btn_volume_width/2 - width()/2 , point.y() - height() - border);
+        move(point.x() + btn_volume_width/2 - width()/2 , point.y() - height() + border);
         show();
     }
     void setVolume(int volume){
@@ -54,6 +54,7 @@ public:
     bool getBEnter(){return m_b_enter;}
 signals:
     void valueChanged(int);
+	void sigLeave();
 protected:
     void enterEvent(QEvent* event){
         //qDebug()<<"enterEvent";
@@ -64,6 +65,7 @@ protected:
         //qDebug()<<"leaveEvent";
         Q_UNUSED(event);
         m_b_enter = false;
+		emit sigLeave();
     }
 protected slots:
     void onValueChanged(int volume){

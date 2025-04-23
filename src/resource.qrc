@@ -73,5 +73,8 @@
         <file>icon/volume_black.png</file>
         <file>icon/volume_gray.png</file>
         <file>icon/volume_white.png</file>
+        <file>icon/language_black.png</file>
+        <file>icon/language_gray.png</file>
+        <file>icon/language_white.png</file>
     </qresource>
 </RCC>

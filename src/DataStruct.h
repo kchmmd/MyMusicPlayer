@@ -5,6 +5,7 @@
 #include <map>
 #include <set>
 #include <QImage>
+#include <QApplication>
 
 #define VOLUME_INIT 50
 
@@ -29,8 +30,8 @@
 #define LYRIC_SINGLE_HEIGHT 30
 #define LYRIC_DOUBLE_HEIGHT 60
 
-#define DEFAULT_WIDGET_X (QApplication::desktop()->width() / 2 - m_config.widget_width / 2)
-#define DEFAULT_WIDGET_Y (QApplication::desktop()->height() / 2 - m_config.widget_height / 2)
+#define DEFAULT_WIDGET_X -1
+#define DEFAULT_WIDGET_Y -1
 
 #define DEFAULT_WIDGET_WIDTH 760
 #define DEFAULT_WIDGET_HEIGHT 450
@@ -49,6 +50,11 @@
 #define LYRIC_ANALYSIS_MODEL "/cli/ggml-large-v1.bin"
 
 #define MUSIC_NAME "/music_tmp_name"
+
+#define LANGUAGE_FILE "/resource/MyMusicPlayer_zh_CN.qm"
+
+#define RESOURCE "/resource/config.xml"
+#define LOG_FILE_NAME "log.txt"
 
 enum PlayType{
     ShufflePlay=0,//随机播放
@@ -77,7 +83,8 @@ struct LineLyricData
 
 struct Config
 {
-    std::set<QString> set_styles;
+    std::set<QString> set_language;
+	std::set<QString> set_styles;
     QString software_name;
 	QString software_about;
     QString icon;
@@ -85,7 +92,8 @@ struct Config
 	QString lyric_analysis_cmd;
 	QString lyric_analysis_exe;
 	QString lyric_analysis_model;
-    unsigned int style_index;
+	int language_index;
+    int style_index;
     int volume;
     int widget_x;
     int widget_y;

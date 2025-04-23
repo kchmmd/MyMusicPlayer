@@ -1,6 +1,6 @@
 ﻿/*******************************************
 *mainwindow.cpp
-*播放器主界面
+*Player mainwindow / 播放器主界面
 ********************************************/
 #pragma execution_character_set("utf-8")
 
@@ -34,13 +34,10 @@
 #include <QEventLoop>
 #include <QApplication>
 #include <QRandomGenerator>
+#include <QTranslator>
 
-#define RESOURCE "/resource/config.xml"
-#define LOG_FILE_NAME "log.txt"
-
-
-MainWindow::MainWindow(QWidget *parent)
-    : MyWidget(parent)
+MainWindow::MainWindow(Config config, QWidget *parent)
+    : m_translator(nullptr), m_config(config), MyWidget(parent)
 {
     setObjectName("mainwindow");
     QVBoxLayout* vbox = new QVBoxLayout;
@@ -67,17 +64,18 @@ MainWindow::MainWindow(QWidget *parent)
     m_menu_mainwindow->setAttribute(Qt::WA_TranslucentBackground);
     m_menu_music_list->setAttribute(Qt::WA_TranslucentBackground);
     m_menu_trayIcon->setAttribute(Qt::WA_TranslucentBackground);
+
     //在windows下，自带的阴影效果仍然是直角，还需设置去除阴影效果
     m_menu_mainwindow->setWindowFlag(Qt::NoDropShadowWindowHint);
     m_menu_trayIcon->setWindowFlag(Qt::NoDropShadowWindowHint);
 
     m_systemTrayIcon->setContextMenu(m_menu_trayIcon);
-    QAction* act_add = new QAction("添加歌曲");
-    QAction* act_scan = new QAction("扫描歌曲");
-    QAction* act_remove = new QAction("从列表中删除");
-    QAction* act_show = new QAction("显示", m_menu_trayIcon);
-    QAction* act_show_reset = new QAction("坐标重置", m_menu_trayIcon);
-    QAction* act_quit = new QAction("退出", m_menu_trayIcon);
+    QAction* act_add = new QAction(tr("Add music"));
+    QAction* act_scan = new QAction(tr("Scan music"));
+    QAction* act_remove = new QAction(tr("Remove"));
+    QAction* act_show = new QAction(tr("Show"), m_menu_trayIcon);
+    QAction* act_show_reset = new QAction(tr("Reset position"), m_menu_trayIcon);
+    QAction* act_quit = new QAction(tr("Quit"), m_menu_trayIcon);
     act_add->setData(ACTION_ADD);
     act_scan->setData(ACTION_SCAN);
     act_remove->setData(ACTION_REMOVE);
@@ -122,8 +120,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_systemTrayIcon, &QSystemTrayIcon::activated, this, &MainWindow::onActivated);
 
     connect(m_headerBar, &HeaderBar::sigClickedClose, this, &MainWindow::close);
+	connect(m_headerBar, &HeaderBar::sigClickedLanguage, this, &MainWindow::onClickedLanguage);
     connect(m_headerBar, &HeaderBar::sigClickedMaxOrNormal, this, &MainWindow::onClickedMaxOrNormal);
-    connect(m_headerBar, &HeaderBar::sigClickedMin, this, &MainWindow::showMinimized);
+    connect(m_headerBar, &HeaderBar::sigClickedMin, this, &MainWindow::showMinimized); 
 
     connect(m_headerBar, &HeaderBar::sigClickedStyle, this, &MainWindow::onSetStyle);
 
@@ -159,6 +158,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_controlBar, &ControlBar::sigSetPlayerType, this, &MainWindow::onSetCurrentPlayType);
 
     connect(m_myVolumeControlBar, &MyVolumeControlBar::valueChanged, this, &MainWindow::onVolumeValueChanged);
+	connect(m_myVolumeControlBar, &MyVolumeControlBar::sigLeave, this, &MainWindow::onLeaveMute);
 
 	m_musicList->hide();
 	m_controlBar->setFocus();
@@ -171,8 +171,10 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     setConfig();
-    saveConfig();
+    saveConfig(m_config);
     saveReCord();
+	quitLog();
+
     m_menu_trayIcon->deleteLater();
     m_menu_mainwindow->deleteLater();
     m_menu_music_list->deleteLater();
@@ -191,34 +193,52 @@ MainWindow::~MainWindow()
 	m_musicLyricManager_thread->wait();
 	m_musicLyricManager_thread->deleteLater();
 	m_musicLyricManager->deleteLater();
-    quitLog();
+
 }
 
 void MainWindow::init()
 {
     m_playType = ListLoop;
     m_slider_press = false;
-    initConfig();
-    loadConfig();
+	m_current_index = 0;
+    //initConfig();
+    //loadConfig();
+
+	setWindowTitle(m_config.software_name);
+	setWindowIcon(QIcon(getRootPath() + "/resource/" + m_config.icon));
+
+	m_systemTrayIcon->setIcon(QIcon(getRootPath() + "/resource/" + m_config.icon));
+	m_systemTrayIcon->setToolTip(m_config.software_name);
+
+	if (m_config.widget_x == -1) {
+		m_config.widget_x = (QApplication::desktop()->width() / 2 - m_config.widget_width / 2);
+	}
+	if (m_config.widget_y == -1) {
+		m_config.widget_y = (QApplication::desktop()->height() / 2 - m_config.widget_height / 2);
+	}
+
+	this->setGeometry(m_config.widget_x, m_config.widget_y, m_config.widget_width, m_config.widget_height);
+	m_lyricBar->setGeometry(m_config.lyric_x, m_config.lyric_y, m_config.lyric_width, m_config.lyric_height);
+	m_lyricBar->setVisible(m_config.lyric_show);
 
 	m_headerBar->setTitle(m_config.software_name);
 	m_headerBar->setTitleFontSize(15);
 	m_headerBar->setTitleToolTip(m_config.software_about);
+
 	m_musicLyricManager->init(m_config.lyric_analysis_cmd, m_config.lyric_analysis_exe, m_config.lyric_analysis_model);
-    setWindowTitle(m_config.software_name);
-    setWindowIcon(QIcon(getRootPath() + "/resource/" + m_config.icon));
-    m_systemTrayIcon->setIcon(QIcon(getRootPath() + "/resource/" + m_config.icon));
-    m_systemTrayIcon->setToolTip(m_config.software_name);
-    m_lyricBar->setVisible(m_config.lyric_show);
-    m_lyricBar->setGeometry(m_config.lyric_x, m_config.lyric_y, m_config.lyric_width, m_config.lyric_height);
-    this->setGeometry(m_config.widget_x, m_config.widget_y, m_config.widget_width, m_config.widget_height);
+    
     m_controlBar->setCurrentPlayerType(m_config.playType);
-    m_playType = m_config.playType;
 	m_myVolumeControlBar->setVolume(m_config.volume);
+	m_playType = m_config.playType;
+
+	// 加载翻译文件
+	QString language_qm = getCurrentLanguage();
+	setLanguage(language_qm);
     // 加载QSS文件
     QString style_qss = getCurrentStyle();
-    setStyle(style_qss);//加载样式
-    loadReCord();//加载记录
+    setStyle(style_qss);
+	//加载记录
+    loadReCord();
 }
 
 void MainWindow::showReset()
@@ -226,31 +246,35 @@ void MainWindow::showReset()
     this->setGeometry(DEFAULT_WIDGET_X, DEFAULT_WIDGET_Y, DEFAULT_WIDGET_WIDTH, DEFAULT_WIDGET_HEIGHT);
 }
 
-void MainWindow::initConfig()
+void MainWindow::initConfig(Config &config)
 {
-    m_config.volume = 50;
-    m_config.software_name = QString::fromLocal8Bit("k歌之王");
-	m_config.software_about = "软件：k歌之王\n作者：kch";
-    m_config.icon = "logo.ico";
-    m_config.widget_width = DEFAULT_WIDGET_WIDTH;
-    m_config.widget_height = DEFAULT_WIDGET_HEIGHT;
-    m_config.widget_x = DEFAULT_WIDGET_X;
-    m_config.widget_y = DEFAULT_WIDGET_Y;
-    m_config.lyric_show = false;
-    m_config.lyric_width = DEFAULT_LYRIC_BAR_WIDTH;
-    m_config.lyric_height = DEFAULT_LYRIC_BAR_HEIGHT;
-    m_config.lyric_x = QApplication::desktop()->width()/2 - m_config.lyric_width/2;
-    m_config.lyric_y = 0;
-    m_config.playType = m_playType;
-    m_config.style_index = 0;
-    m_config.set_styles.insert("/resource/style_black.qss");
-    m_config.set_styles.insert("/resource/style_white.qss");
+    config.software_name = tr("MyMusicPlayer");
+	config.software_about = QString("%1：%2\n%3：%4")
+		.arg(tr("Software"))
+		.arg(config.software_name)
+		.arg(tr("Author")).arg(tr("kch"));
+    config.icon = "logo.ico";
+	config.set_language.insert("/resource/zh_CN.qm");
+	config.set_language.insert("/resource/zh_EN.qm");
+	config.set_styles.insert("/resource/style_black.qss");
+	config.set_styles.insert("/resource/style_white.qss");
+	config.language_index = 0;
+	config.style_index = 0;
+	config.volume = 50;
+    config.widget_width = DEFAULT_WIDGET_WIDTH;
+    config.widget_height = DEFAULT_WIDGET_HEIGHT;
+    config.widget_x = DEFAULT_WIDGET_X;
+    config.widget_y = DEFAULT_WIDGET_Y;
+    config.lyric_show = false;
+    config.lyric_width = DEFAULT_LYRIC_BAR_WIDTH;
+    config.lyric_height = DEFAULT_LYRIC_BAR_HEIGHT;
+    config.lyric_x = QApplication::desktop()->width()/2 - config.lyric_width/2;
+    config.lyric_y = 0;
+    config.playType = OrderPlay;
 
-	m_config.lyric_analysis_cmd = LYRIC_ANALYSIS_CMD;
-	m_config.lyric_analysis_exe = LYRIC_ANALYSIS_EXE;
-	m_config.lyric_analysis_model = LYRIC_ANALYSIS_MODEL;
-
-	m_current_index = 0;
+	config.lyric_analysis_cmd = LYRIC_ANALYSIS_CMD;
+	config.lyric_analysis_exe = LYRIC_ANALYSIS_EXE;
+	config.lyric_analysis_model = LYRIC_ANALYSIS_MODEL;
 }
 
 void MainWindow::setConfig()
@@ -317,17 +341,14 @@ quint64 MainWindow::getMusicDuration(const QString &music_file)
         duration = mediaPlayer.metaData(QMediaMetaData::Duration).toULongLong();
         QCoreApplication::processEvents();
     }
-    //time_qstr = QTime::fromMSecsSinceStartOfDay(time).toString("hh:mm:ss");
-    //qDebug()<<"isAudioAvailable:"<<mediaPlayer.isAudioAvailable() <<" duration:"<<duration;
 
-
-    QStringList keyList = mediaPlayer.availableMetaData();
-    for(QString key:keyList){
-        qDebug()<<"key:"<<key<<" value:"<<mediaPlayer.metaData(key);
-        if(key == "Author"){
-            qDebug()<<"key:"<<key<<" value:"<<getQString(mediaPlayer.metaData(key).toString().toLocal8Bit());
-        }
-    }
+    //QStringList keyList = mediaPlayer.availableMetaData();
+    //for(QString key:keyList){
+    //    qDebug()<<"key:"<<key<<" value:"<<mediaPlayer.metaData(key);
+    //    if(key == "Author"){
+    //        qDebug()<<"key:"<<key<<" value:"<<getQString(mediaPlayer.metaData(key).toString().toLocal8Bit());
+    //    }
+    //}
 
     return duration;
 }
@@ -354,16 +375,7 @@ bool MainWindow::getMusicData(MusicData *musicData, const QString &file_path)
         return false;
     }
 
-    //time_qstr = QTime::fromMSecsSinceStartOfDay(time).toString("hh:mm:ss");
-    //qDebug()<<"isAudioAvailable:"<<mediaPlayer.isAudioAvailable() <<" duration:"<<duration;
-    //qDebug()<<"file_path" <<file_path;
-
-    QStringList keyList = mediaPlayer.availableMetaData();
-//    qDebug()<<"=====================";
-//    for(QString key: keyList){
-//        qDebug()<<"key:" << key << " value:"<<mediaPlayer.metaData(key);
-//    }
-//    qDebug()<<"=====================";
+    QStringList keyList = mediaPlayer.availableMetaData(); 
     musicData->File_path = file_path;
     musicData->Duration = duration;//时长
     musicData->Duration_format = getMusicDurationQstrFormat(duration);
@@ -440,13 +452,13 @@ QString MainWindow::getCurrentMusicFile()
 
 void MainWindow::add()
 {
-    QStringList files = QFileDialog::getOpenFileNames(nullptr, QStringLiteral("选择歌曲"),QStringLiteral("/"),QStringLiteral("*"));
+    QStringList files = QFileDialog::getOpenFileNames(nullptr, tr("Add music"),QStringLiteral("/"),QStringLiteral("*"));
 	emit sigAddMusicFiles(files);
 }
 
 void MainWindow::scan()
 {
-    QString dir = QFileDialog::getExistingDirectory(nullptr, "选择扫描目录","/");
+    QString dir = QFileDialog::getExistingDirectory(nullptr, tr("Choose scan dir"),"/");
     if(dir.isEmpty()){
         return;
     }
@@ -497,7 +509,7 @@ void MainWindow::loadReCord()
         return;
     }
     if(!file.open(QIODevice::ReadOnly)){
-        QMessageBox::information(nullptr, "提示", music_files_path+"歌曲记录读取失败！");
+        QMessageBox::information(nullptr, tr("Message"), music_files_path + tr("music record load error."));
         return;
     }
     QStringList files;
@@ -526,10 +538,10 @@ void MainWindow::saveReCord()
     m_musicList->saveReCord(music_files_path, current_index, volume);
 }
 
-void MainWindow::loadConfig()
+void MainWindow::loadConfig(Config& config)
 {
-    QString config = getRootPath() + RESOURCE;
-    QFile file(config);
+    QString config_xml = getRootPath() + RESOURCE;
+    QFile file(config_xml);
     if(!file.open(QIODevice::ReadOnly)){
         //QMessageBox::warning(nullptr,"提示","配置文件" + config + "打开失败！");
         return;
@@ -549,36 +561,52 @@ void MainWindow::loadConfig()
         QDomElement domElement= node.toElement();
         QString type = domElement.attribute("type");
         if(type == "software"){
-            m_config.software_name = domElement.attribute("value");
-			m_config.software_about = domElement.attribute("about");
-            m_config.icon = domElement.attribute("icon");
-            m_config.widget_x = domElement.attribute("x").toUInt();
-            m_config.widget_y = domElement.attribute("y").toUInt();
-            m_config.widget_width = domElement.attribute("width").toUInt();
-            m_config.widget_height = domElement.attribute("height").toUInt();
-        }else if(type == "styles"){
-            m_config.style_index = domElement.attribute("value").toUInt();
+            config.software_name = domElement.attribute("value");
+			config.software_about = domElement.attribute("about");
+            config.icon = domElement.attribute("icon");
+            config.widget_x = domElement.attribute("x").toUInt();
+            config.widget_y = domElement.attribute("y").toUInt();
+            config.widget_width = domElement.attribute("width").toUInt();
+            config.widget_height = domElement.attribute("height").toUInt();
+        }else if (type == "language") {
+			config.language_index = domElement.attribute("value").toUInt();
+			QDomNode node_child = domElement.firstChild();
+			while (!node_child.isNull()) {
+				QString language = node_child.toElement().attribute("value");
+				config.set_language.insert(language);
+				node_child = node_child.nextSibling();
+			}
+		}else if(type == "styles"){
+            config.style_index = domElement.attribute("value").toUInt();
             QDomNode node_child = domElement.firstChild();
             while(!node_child.isNull()){
                 QString style = node_child.toElement().attribute("value");
-                m_config.set_styles.insert(style);
+                config.set_styles.insert(style);
+                node_child = node_child.nextSibling();
+            }
+        }else if(type == "styles"){
+            config.style_index = domElement.attribute("value").toUInt();
+            QDomNode node_child = domElement.firstChild();
+            while(!node_child.isNull()){
+                QString style = node_child.toElement().attribute("value");
+                config.set_styles.insert(style);
                 node_child = node_child.nextSibling();
             }
         }else if(type == "playType"){
-            m_config.playType = (PlayType)domElement.attribute("value").toUInt();
-            qDebug()<<"read  m_config.playType:"<< m_config.playType;
+            config.playType = (PlayType)domElement.attribute("value").toUInt();
+            qDebug()<<"read  config.playType:"<< config.playType;
         }else if(type == "volume"){
-            m_config.volume = domElement.attribute("value").toUInt();
+            config.volume = domElement.attribute("value").toUInt();
         }else if(type == "lyric_show"){
-            m_config.lyric_show = domElement.attribute("value") == "true";
-            m_config.lyric_width = domElement.attribute("width").toUInt();
-            m_config.lyric_height = domElement.attribute("height").toUInt();
-            m_config.lyric_x = domElement.attribute("x").toUInt();
-            m_config.lyric_y = domElement.attribute("y").toUInt();
+            config.lyric_show = domElement.attribute("value") == "true";
+            config.lyric_width = domElement.attribute("width").toUInt();
+            config.lyric_height = domElement.attribute("height").toUInt();
+            config.lyric_x = domElement.attribute("x").toUInt();
+            config.lyric_y = domElement.attribute("y").toUInt();
         }else if (type == "lyric_analysis") {
-			m_config.lyric_analysis_cmd = domElement.attribute("value");
-			m_config.lyric_analysis_exe = domElement.attribute("exe");
-			m_config.lyric_analysis_model = domElement.attribute("model");
+			config.lyric_analysis_cmd = domElement.attribute("value");
+			config.lyric_analysis_exe = domElement.attribute("exe");
+			config.lyric_analysis_model = domElement.attribute("model");
 		}
         node = node.nextSibling();
     }
@@ -586,10 +614,10 @@ void MainWindow::loadConfig()
     file.close();
 }
 
-void MainWindow::saveConfig()
+void MainWindow::saveConfig(const Config& config)
 {
-    QString config = getRootPath() + RESOURCE;
-    QFile file(config);
+    QString config_xml = getRootPath() + RESOURCE;
+    QFile file(config_xml);
     if(!file.open(QIODevice::WriteOnly)){
         //QMessageBox::warning(nullptr,"提示","文件打开失败！");
         return;
@@ -600,20 +628,32 @@ void MainWindow::saveConfig()
 
     QDomElement domElementChild = doc.createElement("Node");//创建节点名
     domElementChild.setAttribute("type","software");
-    domElementChild.setAttribute("value",m_config.software_name);
-	domElementChild.setAttribute("about", m_config.software_about);
-    domElementChild.setAttribute("icon",m_config.icon);
-    domElementChild.setAttribute("x",QString::number(m_config.widget_x));
-    domElementChild.setAttribute("y",QString::number(m_config.widget_y));
-    domElementChild.setAttribute("width",QString::number(m_config.widget_width));
-    domElementChild.setAttribute("height",QString::number(m_config.widget_height));
+    domElementChild.setAttribute("value",config.software_name);
+	domElementChild.setAttribute("about", config.software_about);
+    domElementChild.setAttribute("icon",config.icon);
+    domElementChild.setAttribute("x",QString::number(config.widget_x));
+    domElementChild.setAttribute("y",QString::number(config.widget_y));
+    domElementChild.setAttribute("width",QString::number(config.widget_width));
+    domElementChild.setAttribute("height",QString::number(config.widget_height));
     domElement.appendChild(domElementChild);//添加到node节点
+
+	domElementChild = doc.createElement("Node");
+	domElementChild.setAttribute("type", "language");
+	domElementChild.setAttribute("value", QString::number(config.language_index));
+	for (auto itor = config.set_language.begin();
+		itor != config.set_language.end(); itor++) {
+		QDomElement domElementChildChild = doc.createElement("Node");
+		domElementChildChild.setAttribute("type", "language");
+		domElementChildChild.setAttribute("value", *itor);
+		domElementChild.appendChild(domElementChildChild);
+	}
+	domElement.appendChild(domElementChild);
 
     domElementChild = doc.createElement("Node");
     domElementChild.setAttribute("type","styles");
-    domElementChild.setAttribute("value",QString::number(m_config.style_index));
-    for(auto itor = m_config.set_styles.begin();
-        itor != m_config.set_styles.end(); itor++){
+    domElementChild.setAttribute("value",QString::number(config.style_index));
+    for(auto itor = config.set_styles.begin();
+        itor != config.set_styles.end(); itor++){
          QDomElement domElementChildChild = doc.createElement("Node");
          domElementChildChild.setAttribute("type","style");
          domElementChildChild.setAttribute("value",*itor);
@@ -623,28 +663,28 @@ void MainWindow::saveConfig()
 
     domElementChild = doc.createElement("Node");
     domElementChild.setAttribute("type","volume");
-    domElementChild.setAttribute("value",m_config.volume);
+    domElementChild.setAttribute("value",config.volume);
     domElement.appendChild(domElementChild);
 
     domElementChild = doc.createElement("Node");
     domElementChild.setAttribute("type","playType");
-    domElementChild.setAttribute("value",QString::number(m_config.playType));
+    domElementChild.setAttribute("value",QString::number(config.playType));
     domElement.appendChild(domElementChild);
 
     domElementChild = doc.createElement("Node");
     domElementChild.setAttribute("type","lyric_show");
-    domElementChild.setAttribute("value",m_config.lyric_show ? "true":"false");
-    domElementChild.setAttribute("width",QString::number(m_config.lyric_width));
-    domElementChild.setAttribute("height",QString::number(m_config.lyric_height));
-    domElementChild.setAttribute("x",QString::number(m_config.lyric_x));
-    domElementChild.setAttribute("y",QString::number(m_config.lyric_y));
+    domElementChild.setAttribute("value",config.lyric_show ? "true":"false");
+    domElementChild.setAttribute("width",QString::number(config.lyric_width));
+    domElementChild.setAttribute("height",QString::number(config.lyric_height));
+    domElementChild.setAttribute("x",QString::number(config.lyric_x));
+    domElementChild.setAttribute("y",QString::number(config.lyric_y));
     domElement.appendChild(domElementChild);
 
 	domElementChild = doc.createElement("Node");
 	domElementChild.setAttribute("type", "lyric_analysis");
-	domElementChild.setAttribute("value", m_config.lyric_analysis_cmd);
-	domElementChild.setAttribute("exe", m_config.lyric_analysis_exe);
-	domElementChild.setAttribute("model", m_config.lyric_analysis_model);
+	domElementChild.setAttribute("value", config.lyric_analysis_cmd);
+	domElementChild.setAttribute("exe", config.lyric_analysis_exe);
+	domElementChild.setAttribute("model", config.lyric_analysis_model);
 	domElement.appendChild(domElementChild);
 
     QTextStream stream(&file);
@@ -670,6 +710,24 @@ void MainWindow::updateTableSize()
 
 }
 
+void MainWindow::setLanguage(QString language)
+{
+	if (!QFile(language).exists()) {
+		language = getRootPath() + language;
+	}
+	addLog("language:" + language); 
+	if (m_translator) {
+		QApplication::instance()->removeTranslator(m_translator);
+		delete m_translator;
+	}
+	m_translator = new QTranslator;
+	if (m_translator->load(language)) {  // 尝试加载翻译文件
+		addLog("language:" + language);
+		QApplication::instance()->installTranslator(m_translator);
+		update();
+	}
+}
+
 void MainWindow::setStyle(QString style)
 {
     if(!QFile(style).exists()){
@@ -683,7 +741,7 @@ void MainWindow::setStyle(QString style)
 
 QString MainWindow::getCurrentStyle()
 {
-     QString style_qss;
+    QString style_qss;
     unsigned int index = 0;
     for(QString qstr:m_config.set_styles){
         if(index == m_config.style_index){
@@ -693,6 +751,20 @@ QString MainWindow::getCurrentStyle()
         index++;
     }
     return style_qss;
+}
+
+QString MainWindow::getCurrentLanguage()
+{
+	QString language;
+	unsigned int index = 0;
+	for (QString qstr : m_config.set_language) {
+		if (index == m_config.language_index) {
+			language = qstr;
+			break;
+		}
+		index++;
+	}
+	return language;
 }
 
 QString MainWindow::getRootPath()
@@ -758,11 +830,37 @@ void MainWindow::onClickedMaxOrNormal()
 {
     if(this->isMaximized()){
         this->showNormal();
-        m_headerBar->setMaxOrNormalTooltip(QString::fromLocal8Bit("最大化"));
+        //m_headerBar->setMaxOrNormalTooltip(tr("Max"));
     }else{
         this->showMaximized();
-        m_headerBar->setMaxOrNormalTooltip(QString::fromLocal8Bit("还原"));
+        //m_headerBar->setMaxOrNormalTooltip(tr("Restore"));
     }
+}
+
+void MainWindow::onClickedLanguage()
+{
+	m_config.language_index++;
+	if (m_config.language_index >= m_config.set_styles.size()) {
+		m_config.language_index = 0;
+	}
+	// 加载翻译文件
+	QString language = getCurrentLanguage();
+
+	QMessageBox msgBox;
+	msgBox.setObjectName("Messagebox"); 
+	msgBox.setText(tr("Switch language"));
+	msgBox.setInformativeText(QString(tr("Have switch  language to %1, restart to take effect, whether to restart?")).arg(QFileInfo(language).baseName()));
+	msgBox.setStandardButtons( QMessageBox::Ok | QMessageBox::Cancel);
+	msgBox.setButtonText(QMessageBox::Ok, tr("Ok"));
+	msgBox.setButtonText(QMessageBox::Cancel, tr("Cancel"));
+	msgBox.button(QMessageBox::Ok)->setObjectName("Ok");
+	msgBox.button(QMessageBox::Cancel)->setObjectName("Cancel");
+	if (QMessageBox::Ok == msgBox.exec()) {
+		QCoreApplication::instance()->quit();  // 退出当前应用程序
+		QProcess::startDetached(QCoreApplication::applicationFilePath(), QStringList());
+	} 
+
+	//setLanguage(language);
 }
 
 void MainWindow::onClickedGoMain()
@@ -860,14 +958,21 @@ void MainWindow::onEnterMute()
 {
     //qDebug()<<"OnEnterMute:"<<m_controlBar->getBtnMutePoint() <<" "<<mapToGlobal(m_controlBar->getBtnMutePoint());
     m_myVolumeControlBar->setPosition(m_controlBar->getBtnMutePoint(), m_controlBar->getBtnVolumeWidth());
-    //延时隐藏1000ms
-    QTime dieTime = QTime::currentTime().addMSecs(1000);
-    while( QTime::currentTime() < dieTime ){
-        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
-    }
-    if(!m_myVolumeControlBar->getBEnter()){
-        m_myVolumeControlBar->hide();
-    }
+    ////延时隐藏1000ms
+    //QTime dieTime = QTime::currentTime().addMSecs(1000);
+    //while( QTime::currentTime() < dieTime ){
+    //    QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+    //}
+    //if(!m_myVolumeControlBar->getBEnter()){
+    //    m_myVolumeControlBar->hide();
+    //}
+}
+
+void MainWindow::onLeaveMute()
+{
+	if (!m_myVolumeControlBar->getBEnter()) {
+		m_myVolumeControlBar->hide();
+	}
 }
 
 void MainWindow::onMenu(QAction *act)
@@ -958,6 +1063,7 @@ void MainWindow::onSliderValueChanged(int value)
 void MainWindow::onVolumeValueChanged(int value)
 {
     //qDebug()<<"onVolumeValueChanged:"<<value;
+	m_player->setMuted(value == 0);
     m_player->setVolume(value);
     m_controlBar->setBMute(value == 0);
 }
@@ -990,7 +1096,7 @@ void MainWindow::onAddMusicData(MusicData musicData)
 	playlist->addMedia(QMediaContent(QUrl(musicData.File_path)));
 
 	if (m_current_index + 1 == playlist->mediaCount()) {
-		addLog("默认播放第一个");
+		addLog(QString("%1:%2").arg(tr("player index")).arg(m_current_index));
 		m_player->playlist()->setCurrentIndex(m_current_index);
 		m_player->play();//默认播放第一个
 		m_player->pause();

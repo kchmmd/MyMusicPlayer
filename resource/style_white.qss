@@ -7,6 +7,20 @@ QWidget#MusicList{
     background-color: rgb(235, 235, 235);
 }
 
+QDialog#Messagebox{
+    background-color: rgb(247, 249, 252);
+	color: black;
+    border: none;
+}
+QDialog#Messagebox QPushButton{
+    background-color: gray;
+	color: white;
+}
+QDialog#Messagebox QPushButton::hover{
+    background-color: black;
+	color: white;
+}
+
 QWidget#SearchBar{
     background:  rgb(235, 235, 235);
     border: 1px solid gray;
@@ -379,6 +393,19 @@ QPushButton#min{
 }
 QPushButton#min::hover{
     image: url(:/icon/min_black.png);
+    icon-size: 15px;
+    background: none;
+    border: none;
+}
+
+QPushButton#language{
+    image: url(:/icon/language_gray.png);
+    icon-size: 15px;
+    background: none;
+    border: none;
+}
+QPushButton#language::hover{
+    image: url(:/icon/language_black.png);
     icon-size: 15px;
     background: none;
     border: none;

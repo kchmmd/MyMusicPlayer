@@ -25,8 +25,8 @@ SearchBar::SearchBar(QWidget* parent)
 
     m_btn_clear->setObjectName("SearchBar_clear");
     m_btn_search->setObjectName("SearchBar_search");
-    m_btn_clear->setToolTip(QString::fromLocal8Bit("清除内容"));
-    m_btn_search->setToolTip(QString::fromLocal8Bit("搜索"));
+    m_btn_clear->setToolTip(tr("Clear"));
+    m_btn_search->setToolTip(tr("Search"));
     m_btn_clear->setIcon(QIcon(":/resource/resource/none.png"));
     m_btn_search->setIcon(QIcon(":/resource/resource/none.png"));
     m_lineEdit->setObjectName("SearchBar_lineEdit");

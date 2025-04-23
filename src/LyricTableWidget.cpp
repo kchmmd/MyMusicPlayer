@@ -78,7 +78,7 @@ void LyricTableWidget::clear()
 void LyricTableWidget::setLoading()
 {
 	m_tableWidget->hide();
-	m_label_loading->setText("歌词加载中...");
+	m_label_loading->setText(tr("Lyric loading..."));
 	m_widget_loading->show();
 }
 

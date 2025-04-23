@@ -59,6 +59,7 @@ private:
 private:
 	//QString m_music_lyric;
 	std::map<QProcess*, QString> m_map_process_file;
+	std::map<QProcess*, int> m_map_process_id;
 	QString m_lyric_analysis_cmd;
 	QString m_lyric_analysis_exe;
 	QString m_lyric_analysis_model;

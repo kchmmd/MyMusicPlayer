@@ -34,24 +34,7 @@ protected:
 		emit sliderReleased();
 	}
 };
-
-class MyButton: public QPushButton
-{
-    Q_OBJECT
-public:
-    MyButton(QWidget* parent=nullptr):QPushButton(parent){
-        setObjectName("MyButton");
-        setMouseTracking(true);
-    }
-signals:
-     void sigEnter();
-protected:
-    void enterEvent(QEvent* event){
-        Q_UNUSED(event);
-        emit sigEnter();
-    }
-};
-
+ 
 class ControlBar: public QWidget
 {
     Q_OBJECT
@@ -99,7 +82,7 @@ private:
     QPushButton* m_btn_next;
     QPushButton* m_btn_player_model;
     QPushButton* m_btn_lyric;
-    MyButton* m_btn_volume;
+	QPushButton* m_btn_volume;
     QPushButton* m_btn_table;
     QWidget* m_widget_left;
     QWidget* m_widget_right;//为了居中

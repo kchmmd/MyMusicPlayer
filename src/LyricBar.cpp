@@ -290,15 +290,15 @@ LyricBarControl::LyricBarControl(QWidget *parent)
     m_btn_fixed->setObjectName("lyric_fixed");
     m_btn_close->setObjectName("lyric_close");
 
-    m_btn_show_main->setToolTip(QString::fromLocal8Bit("显示主界面"));
-    m_btn_back->setToolTip(QString::fromLocal8Bit("歌词慢放50ms"));
-    m_btn_forward->setToolTip(QString::fromLocal8Bit("歌词快放50ms"));
-    m_btn_pre->setToolTip(QString::fromLocal8Bit("上一首"));
-    m_btn_player_pause->setToolTip(QString::fromLocal8Bit("播放"));
-    m_btn_next->setToolTip(QString::fromLocal8Bit("下一首"));
-    m_btn_set->setToolTip(QString::fromLocal8Bit("设置"));
-    m_btn_fixed->setToolTip(QString::fromLocal8Bit("锁定桌面歌词"));
-    m_btn_close->setToolTip(QString::fromLocal8Bit("关闭桌面歌词"));
+    m_btn_show_main->setToolTip(tr("Show mainwindow"));
+    m_btn_back->setToolTip(tr("Lyric play slow 50ms"));
+    m_btn_forward->setToolTip(tr("Lyric play fast 50ms"));
+    m_btn_pre->setToolTip(tr("Previous"));
+    m_btn_player_pause->setToolTip(tr("Play"));
+    m_btn_next->setToolTip(tr("Next"));
+    m_btn_set->setToolTip(tr("Set"));
+    m_btn_fixed->setToolTip(tr("Lock lyric"));
+    m_btn_close->setToolTip(tr("Unlock lyric"));
 
     connect(m_btn_show_main, &QPushButton::clicked, this, &LyricBarControl::sigGoMain);
     connect(m_btn_back, &QPushButton::clicked, this, &LyricBarControl::sigBack);
@@ -351,7 +351,7 @@ void LyricBarControl::setBtnsVisible(bool bl)
     m_btn_next->setVisible(bl);
     m_btn_set->setVisible(bl);
     m_btn_close->setVisible(bl);
-    m_btn_fixed->setToolTip(QString::fromLocal8Bit(bl ? "锁定桌面歌词":"解锁桌面歌词"));
+    m_btn_fixed->setToolTip(tr(bl ? "Lock lyric":"Unlock lyric"));
 }
 
 void LyricBarControl::onStateChanged(QMediaPlayer::State newState)
@@ -465,7 +465,7 @@ void LyricPlayer::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
     if(m_lyric_one.isEmpty()){
-        m_lyric_one = "当前没有歌词 啊啊啊啊";
+        m_lyric_one = tr("No found lyric");
     }
     //qDebug()<<"m_lyric_one:"<<m_lyric_one;
     //qDebug()<<"m_lyric_two:"<<m_lyric_two;

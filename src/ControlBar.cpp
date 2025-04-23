@@ -30,7 +30,7 @@ ControlBar::ControlBar(QWidget *parent)
     m_btn_next = new QPushButton(this);
     m_btn_player_model = new QPushButton(this);
     m_btn_lyric = new QPushButton(this);
-    m_btn_volume = new MyButton(this);
+    m_btn_volume = new QPushButton(this);
     m_btn_table = new QPushButton(this);
 
     m_label_current_name = new QLabel(this);
@@ -76,13 +76,13 @@ ControlBar::ControlBar(QWidget *parent)
     this->setFixedHeight(CONTROLBAR_WIDTH);
 
     //m_btn_love->setToolTip("喜欢");
-    m_btn_pre->setToolTip(QString::fromLocal8Bit("上一首"));
-    m_btn_player_pause->setToolTip(QString::fromLocal8Bit("播放"));
-    m_btn_next->setToolTip(QString::fromLocal8Bit("下一首"));
-    m_btn_player_model->setToolTip(QString::fromLocal8Bit("顺序播放"));
-    m_btn_lyric->setToolTip(QString::fromLocal8Bit("歌词"));
-    m_btn_volume->setToolTip(QString::fromLocal8Bit("静音"));
-    m_btn_table->setToolTip(QString::fromLocal8Bit("播放列表"));
+    m_btn_pre->setToolTip(tr("Previous"));
+    m_btn_player_pause->setToolTip(tr("Play"));
+    m_btn_next->setToolTip(tr("Next"));
+    m_btn_player_model->setToolTip(tr("Order play"));
+    m_btn_lyric->setToolTip(tr("Lyric"));
+    m_btn_volume->setToolTip(tr("Mute"));
+    m_btn_table->setToolTip(tr("Playlist"));
 
     //m_btn_love->setIcon(QIcon(":/resource/resource/none.png"));
     m_btn_pre->setIcon(QIcon(":/resource/resource/none.png"));
@@ -122,7 +122,7 @@ ControlBar::ControlBar(QWidget *parent)
     connect(m_btn_player_model, &QPushButton::clicked, this, &ControlBar::onClickedPlayerType);
     connect(m_btn_lyric, &QPushButton::clicked, this, &ControlBar::sigClickedLyric);
     connect(m_btn_volume, &QPushButton::clicked, this, &ControlBar::sigClickedMute);
-    connect(m_btn_volume, &MyButton::sigEnter, this, &ControlBar::sigBtnVolumeEnter);
+    //connect(m_btn_volume, &MyButton::sigEnter, this, &ControlBar::sigBtnVolumeEnter);
     connect(m_btn_table, &QPushButton::clicked, this, &ControlBar::sigClickedTable);
 
     connect(m_slider_time, &QSlider::sliderMoved, this, &ControlBar::sliderMoved);
@@ -180,20 +180,20 @@ void ControlBar::setCurrentPlayerType(PlayType playType)
     m_btn_player_model->style()->unpolish(m_btn_player_model);
     switch (playType) {
         case ShufflePlay://随机播放
-            m_btn_player_model->setToolTip(QString::fromLocal8Bit("随机播放"));
+            m_btn_player_model->setToolTip(tr("Random play"));
             m_btn_player_model->setProperty("status","random_play");
             break;
         case OrderPlay:
-            m_btn_player_model->setToolTip(QString::fromLocal8Bit("顺序播放"));
+            m_btn_player_model->setToolTip(tr("Order play"));
             m_btn_player_model->setProperty("status","order_play");
             break;
         case SingleLoop:
-            m_btn_player_model->setToolTip(QString::fromLocal8Bit("单曲循环"));
+            m_btn_player_model->setToolTip(tr("Single loop"));
             m_btn_player_model->setProperty("status","single_loop");
             break;
         case ListLoop:
         default:
-            m_btn_player_model->setToolTip(QString::fromLocal8Bit("列表循环"));
+            m_btn_player_model->setToolTip(tr("List loop"));
             m_btn_player_model->setProperty("status","list_loop");
             break;
     }
@@ -206,6 +206,9 @@ bool ControlBar::eventFilter(QObject * obj, QEvent * event)
 	if (m_list_object.indexOf(obj) != -1) {
 		if (event->type() == QEvent::Enter) {
 			setCursor(Qt::PointingHandCursor);
+			if (m_btn_volume == obj) {
+				emit sigBtnVolumeEnter();
+			}
 		}
 		else if (event->type() == QEvent::Leave) {
 			unsetCursor(); // 恢复默认光标

@@ -1,6 +1,6 @@
 set project_name=MyMusicPlayer
-set qt_path=C:\Qt\Qt5.14.2\5.14.2\msvc2017\lib\cmake\Qt5
-set windeployqt_path=C:\Qt\Qt5.14.2\5.14.2\msvc2017\bin\windeployqt.exe
+set qt_path=C:/Qt/Qt5.14.2/5.14.2/msvc2017/lib/cmake/Qt5
+set windeployqt_path=C:/Qt/Qt5.14.2/5.14.2/msvc2017/bin/windeployqt.exe
 set vs_version="Visual Studio 15 2017"
 set /p var=wille build %project_name% , Please choice buildType=Debug)(0/1)? 0.Debug 1.Release:
 if %var% equ 1 (set buildType=Release) else (set buildType=Debug)
